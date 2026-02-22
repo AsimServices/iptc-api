@@ -78,11 +78,12 @@ app.post("/api/embed", (req, res) => {
         const exifBytes = piexif.dump(exifObj);
         const inserted = piexif.insert(exifBytes, imageInput);
 
-        if (hadPrefix) {
-            res.json({ image: inserted });
-        } else {
-            res.json({ image: inserted.split(",")[1] });
-        }
+        // Return raw binary JPEG
+        const base64Data = inserted.split(",")[1];
+        const binaryData = Buffer.from(base64Data, "base64");
+        res.set("Content-Type", "image/jpeg");
+        res.set("Content-Disposition", "inline; filename=\"image.jpg\"");
+        res.send(binaryData);
     } catch (err) {
         console.error("Embed error:", err);
         res.status(500).json({ error: err.message });
